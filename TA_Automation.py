@@ -113,7 +113,13 @@ with ThreadPoolExecutor(max_workers=3) as executor:
     results = {name: f.result() for name, f in futures.items()}
 
 print("✅ All queries fetched successfully")
+# -------------------- DEBUG: inspect raw responses --------------------
+for name, resp in results.items():
+    print(f"🔍 [{name}] status={resp.status_code} content-type={resp.headers.get('Content-Type')}")
+    print(f"🔍 [{name}] body preview: {resp.text[:300]!r}")
 
+# -------------------- PROCESS df1 (Sessions Feedback) --------------------
+df1 = pd.DataFrame(results["sessions"].json())
 # -------------------- PROCESS df1 (Sessions Feedback) --------------------
 df1 = pd.DataFrame(results["sessions"].json())
 df1 = df1[[
