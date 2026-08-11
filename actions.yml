@@ -39,10 +39,8 @@ jobs:
       # Step 4: Run TA_Automation.py
       - name: Execute TA_Automation.py
         env:
-          ASHRITHA_SECRET_KEY: ${{ secrets.ASHRITHA_SECRET_KEY }}
+          METABASE_API_KEY: ${{ secrets.METABASE_API_KEY }}
           SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          USERNAME: ${{ secrets.USERNAME }}
-          METABASE_URL: ${{ secrets.METABASE_URL }}
           TA_SESSIONS_QUERY: ${{ secrets.TA_SESSIONS_QUERY }}
           TA_BATCH_QUERY: ${{ secrets.TA_BATCH_QUERY }}
           TA_SLOTS_QUERY: ${{ secrets.TA_SLOTS_QUERY }}
