@@ -36,11 +36,8 @@ def strip_tz(df):
     return df
 
 # -------------------- ENV & AUTH --------------------
-sec = os.getenv("ASHRITHA_SECRET_KEY")
-User_name = os.getenv("USERNAME")
+METABASE_API_KEY = os.getenv("METABASE_API_KEY")
 service_account_json = os.getenv("SERVICE_ACCOUNT_JSON")
-MB_URL = os.getenv("METABASE_URL").rstrip("/") + "/api/session"
-SAK = os.getenv("TA_SHEET_ACCESS_KEY")
 TA_SHEET_KEY = os.getenv("TA_SHEET_ACCESS_KEY")
 
 # -------------------- QUERY ENV VARS --------------------
@@ -48,7 +45,7 @@ TA_SESSIONS_QUERY = os.getenv("TA_SESSIONS_QUERY")   # card/6135
 TA_BATCH_QUERY    = os.getenv("TA_BATCH_QUERY")       # card/6570
 TA_SLOTS_QUERY    = os.getenv("TA_SLOTS_QUERY")       # card/6213
 
-if not sec or not service_account_json:
+if not METABASE_API_KEY or not service_account_json:
     raise ValueError("❌ Missing environment variables. Check GitHub secrets.")
 
 if not TA_SHEET_KEY:
@@ -66,20 +63,11 @@ creds = Credentials.from_service_account_info(
 gc = gspread.authorize(creds)
 
 # -------------------- METABASE AUTH --------------------
-res = requests.post(
-    MB_URL,
-    headers={"Content-Type": "application/json"},
-    json={"username": User_name, "password": sec}
-)
-
-res.raise_for_status()
-token = res.json()['id']
 METABASE_HEADERS = {
     'Content-Type': 'application/json',
-    'X-Metabase-Session': token
+    'x-api-key': METABASE_API_KEY
 }
-print("✅ Metabase session created")
-
+print("✅ Using Metabase API key auth")
 # -------------------- UTILITIES --------------------
 def fetch_with_retry(url, headers, retries=5, delay=15):
     for attempt in range(1, retries + 1):
