@@ -38,18 +38,17 @@ def strip_tz(df):
 # -------------------- ENV & AUTH --------------------
 METABASE_API_KEY = os.getenv("METABASE_API_KEY")
 service_account_json = os.getenv("SERVICE_ACCOUNT_JSON")
-TA_SHEET_KEY = os.getenv("TA_SHEET_ACCESS_KEY")
 
-# -------------------- QUERY ENV VARS --------------------
-TA_SESSIONS_QUERY = os.getenv("TA_SESSIONS_QUERY")   # card/6135
-TA_BATCH_QUERY    = os.getenv("TA_BATCH_QUERY")       # card/6570
-TA_SLOTS_QUERY    = os.getenv("TA_SLOTS_QUERY")       # card/6213
+# -------------------- HARDCODED CONFIG --------------------
+TA_SHEET_KEY = "1gx-0pc1OD4KayvwSv70rLOTOxPHnJNCONyQDDiaUdhU"
+
+MB_BASE = "https://metabase-lierhfgoeiwhr.newtonschool.co"
+TA_SESSIONS_QUERY = f"{MB_BASE}/api/card/6135/query/json"
+TA_BATCH_QUERY    = f"{MB_BASE}/api/card/6570/query/json"
+TA_SLOTS_QUERY    = f"{MB_BASE}/api/card/6213/query/json"
 
 if not METABASE_API_KEY or not service_account_json:
     raise ValueError("❌ Missing environment variables. Check GitHub secrets.")
-
-if not TA_SHEET_KEY:
-    raise ValueError("❌ TA_SHEET_ACCESS_KEY is not set. Check GitHub secrets.")
 
 # -------------------- GOOGLE AUTH --------------------
 service_info = json.loads(service_account_json)
