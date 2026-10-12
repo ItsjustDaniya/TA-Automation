@@ -127,7 +127,7 @@ df1 = df1[[
     'feedback_given', 'session_id', 'rating', 'description', 'module_name',
     'topic', 'cancel_reason', 'action_time', 'booked_time', 'start_timestamp', 'doubt_type', 'doubt_description',
     'question_link','student_rating','student_behaviour','doubt_part_cirricullum','student_intent','type_of_doubt',
-    'additional_feedback'
+    'additional_feedback', 'gem_status'
 ]]
 df1 = df1.rename(columns={
     'lu_batch_name': 'Batch',
@@ -185,6 +185,41 @@ df3 = df3.rename(columns={'ta': 'mentor_name'})
 
 # -------------------- MERGE df + df3 → df4 --------------------
 df4 = pd.merge(df, df3, on=['year_month_date_hour', 'mentor_name', 'time_category'], how='outer')
+
+# -------------------- GEM / PROGRAM COLUMNS (Oct 2026) --------------------
+# `GEM Status` (GEM / Non-GEM / Not tagged, from card 6135) and `Program` (PCDS / Adv+ / ...)
+# are added as the LAST two columns so existing Looker fields don't shift.
+def program_from_batch(name):
+    n = str(name or '').lower()
+    if not n or n == 'nan':
+        return 'Other'
+    if 'advantage plus' in n or 'advantage +' in n or 'adv+' in n:
+        return 'Adv+'
+    if 'advantage' in n:
+        return 'Advantage'
+    if 'agentic' in n:
+        return 'Agentic AI'
+    if 'xcelerate' in n:
+        return 'Xcelerate'
+    if 'data science' in n or 'pcds' in n:
+        return 'PCDS'
+    return 'Other'
+
+
+def add_segment_cols(frame):
+    frame = frame.copy()
+    if 'gem_status' in frame.columns:
+        frame = frame.rename(columns={'gem_status': 'GEM Status'})
+    if 'GEM Status' in frame.columns:
+        frame['GEM Status'] = frame['GEM Status'].fillna('Not tagged')
+    if 'au_batch_name' in frame.columns:
+        frame['Program'] = frame['au_batch_name'].apply(program_from_batch)
+    last = [c for c in ['GEM Status', 'Program'] if c in frame.columns]
+    return frame[[c for c in frame.columns if c not in last] + last]
+
+
+df  = add_segment_cols(df)
+df4 = add_segment_cols(df4)
 
 # -------------------- STRIP TIMEZONE BEFORE WRITING TO SHEETS --------------------
 # Convert tz-aware datetime columns to plain IST strings
