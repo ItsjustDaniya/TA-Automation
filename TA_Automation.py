@@ -154,7 +154,12 @@ if missing:
     raise ValueError(f"❌ df2 (batch query) is missing expected columns: {missing}")
 
 # -------------------- MERGE df1 + df2 --------------------
-df = pd.merge(df1, df2, on=['session_id', 'Batch'], how='inner')
+# Join on session_id only. Card 6135 gives Batch = the student's module batch (e.g. "DS SQL - July A 2026"),
+# while card 6570's batch is the course the session was BOOKED under — for PCDS students that is usually
+# "Pre Course DS Certification - <month>". Joining on both dropped every session where the two differ
+# (most PCDS sessions). Batch is kept from card 6135.
+df2 = df2.drop(columns=['Batch']).drop_duplicates(subset=['session_id'])
+df = pd.merge(df1, df2, on='session_id', how='inner')
 
 # -------------------- FEATURE ENGINEERING --------------------
 df['au_start_date'] = pd.to_datetime(df['au_start_date'], errors='coerce')
