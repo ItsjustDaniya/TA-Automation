@@ -1,42 +1,40 @@
+
 name: Run TA Automation
 
 on:
-  # Runs every 15 minutes UTC
   schedule:
-    - cron: '*/15 * * * *'
-  # Manual trigger
+    - cron: '*/15 * * * *'  # Every 15 minutes UTC
   workflow_dispatch:
 
-# ✅ FIX #6: Replaced broken lock-file approach with GitHub's native concurrency control.
-# This prevents two scheduled runs from overlapping. 'cancel-in-progress: false' means
-# a new trigger will wait for the current run to finish rather than cancel it.
 concurrency:
   group: ta-automation-pipeline
   cancel-in-progress: false
 
 jobs:
   run-ta-automation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
 
     steps:
-      # Step 1: Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Python
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v4
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
+          cache: 'pip'
 
-      # Step 3: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-        working-directory: ./
+          python -m pip install -r requirements.txt
 
-      # Step 4: Run TA_Automation.py
+      - name: Verify Python environment
+        run: |
+          python --version
+          pip --version
+
       - name: Execute TA_Automation.py
         env:
           METABASE_API_KEY: ${{ secrets.METABASE_API_KEY }}
@@ -52,11 +50,9 @@ jobs:
           echo "Current branch: $GITHUB_REF"
           echo "Repository path: $GITHUB_WORKSPACE"
           echo "=============================="
-          echo "🚀 Starting TA_Automation.py..."
-          echo "Using Metabase URL: ${METABASE_URL:0:25}****"
-          echo "Using USERNAME variable: ${USERNAME:+[SET]}"
+
+          echo "Starting TA_Automation.py..."
 
           python TA_Automation.py
 
-          echo "✅ TA_Automation.py executed successfully."
-        working-directory: ./
+          echo "TA_Automation.py executed successfully."
